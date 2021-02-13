@@ -1,3 +1,4 @@
+-- [V1.0]
 -- return true if two items are identical
 function isItemIdentical(item1, item2, ignoreQty)
     if not item1 then

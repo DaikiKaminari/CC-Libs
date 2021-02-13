@@ -67,7 +67,7 @@ function getDatetime()
     local year = date[1]
     local month = date[2]
     local day = date[3]
-    local daylight = getDaylightHours(tonumber(day), tonumber(month), tonumber(year))
+    -- local daylight = getDaylightHours(tonumber(day), tonumber(month), tonumber(year))
     local time = split(split(datetime, "T")[2], ":")
     local offset = split(split(offset, ":")[1], "+")[1]
 
@@ -75,7 +75,7 @@ function getDatetime()
     infos["year"] = year
     infos["month"] = month
     infos["day"] = day
-    infos["hour"] = (tonumber(time[1]) + tonumber(offset) + daylight + 2) % 24
+    infos["hour"] = (tonumber(time[1]) + tonumber(offset) + 1) % 24
     infos["min"] = time[2]
     infos["sec"] = split(time[3], ".")[1]
 
