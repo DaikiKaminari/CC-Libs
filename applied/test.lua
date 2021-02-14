@@ -1,4 +1,4 @@
-local AE_info = require("AE_info.lua")
+local AE_info = require("lib/Applied/AE_info.lua")
 local ae = peripheral.wrap("back")
 
 print("--- TEST getStoredPower ---")
