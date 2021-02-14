@@ -1,4 +1,6 @@
 -- [V1.2]
+local Datetime = {}
+
 -- table : days of march and october when we add/remove an hour for daylight saving
 local daylightHours = {
     [2020] = {["summerBegin"] = 28, ["summerEnd"] = 24},
@@ -10,7 +12,7 @@ local daylightHours = {
 }
 
 --- INIT ---
-function init()
+local function Datetime.init()
     if not fs.exists("lib/json") then
         error("[lib/json] file not found.")
     end

@@ -1,3 +1,6 @@
+-- [V0.01]
+
+-- Returns a string representation of a table (serialization)
 function tableToString(t)
   local str = "{"
   for k,v in pairs(t) do

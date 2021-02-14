@@ -1,17 +1,28 @@
--- [V1.32]
+-- [V2.0]
+local ObjectJSON = {}
+
 --- INIT ---
-function init()
-	print("\n--- INIT objectJSON ---")
-	if not fs.exists("lib/json") then
-		error("File not found : [lib/json]")
+local function init()
+	print("\n--- INIT ObjectJSON ---")
+	if not fs.exists("./json") then
+		print("Warning : File not found : [json]")
+		print("Trying to download [json] lib.")
+		local obj = http.get("https://pastebin.com/raw/4nRg9CHU")
+		assert(obj, "Download failed.")
+		local str = obj.readAll()
+		assert(str and str ~= "", "Download failed.")
+		local h = fs.open("json", "w")
+		h.write(str)
+		h.close()
+		print("Download successful.")
 	end
-	os.loadAPI("lib/json")
-	print("API [lib/json] loaded")
+	os.loadAPI("json")
+	print("API [json] loaded")
 end
 
 --- FUNCTIONS ---
 -- returns json object with the list of players
-function listConnectedPlayers()
+local function ObjectJSON.listConnectedPlayers()
 	local obj = http.get("http://api.mineaurion.com/v1/serveurs")
 	if obj == nil then
 		print("Warning : HTTP request on [http://api.mineaurion.com/v1/serveurs] failed.")
@@ -23,29 +34,21 @@ function listConnectedPlayers()
 end
 
 -- convert text (in json format) into a JSON object (table) and returns it
-function decode(text)
-	if text == nil then
-		error("text cannot be nil.")
-	end
+local function ObjectJSON.decode(text)
+	assert(text, "text cannot be nil.")
 	return json.decode(text)
 end
 
 -- get the content of a file and returns a JSON object (table)
-function decodeFromFile(filename)
-	if filename == nil then
-		error("filename cannot be nil.")
-	end
-	if not fs.exists(filename) then
-		error("[" .. filename .. "] not found.")
-	end
+local function ObjectJSON.decodeFromFile(filename)
+	assert(filename, "filename cannot be nil.")
+	assert(fs.exists(filename), "[" .. filename .. "] not found.")
 	return json.decodeFromFile(filename)
 end
 
 -- get the content of a HTTP link and returns a JSON object (table)
-function decodeHTTP(link)
-	if link == nil then
-		error("link cannot be nil.")
-	end
+local function ObjectJSON.decodeHTTP(link)
+	assert(link, "link cannot be nil.")
 	local request = http.get(link)
 	if request == nil then
 		print("Warning : HTTP request on [" .. link .. "] failed.")
@@ -55,13 +58,9 @@ function decodeHTTP(link)
 end
 
 -- get the content of a HTTP link and save it to a file
-function decodeHTTPSave(link, filename)
-	if link == nil then
-		error("link cannot be nil.")
-	end
-	if filename == nil then
-		error("filename cannot be nil.")
-	end
+local function ObjectJSON.decodeHTTPSave(link, filename)
+	assert(link, "link cannot be nil.")
+	assert(filename, "filename cannot be nil.")
 	local request = http.get(link)
 	if request == nil then
 		print("Warning : HTTP request on [" .. link .. "] failed.")
@@ -73,29 +72,21 @@ function decodeHTTPSave(link, filename)
 end
 
 -- convert JSON object (table) into a string
-function encode(obj)
-	if obj == nil then
-		error("obj cannot be nil.")
-	end
+local function ObjectJSON.encode(obj)
+	assert(obj, "obj cannot be nil.")
 	return json.encore(obj)
 end
 
 -- convert JSON object (table) into a string (pretty json)
-function encodePretty(obj)
-	if obj == nil then
-		error("obj cannot be nil.")
-	end
+local function ObjectJSON.encodePretty(obj)
+	assert(obj, "obj cannot be nil.")
 	return json.encore(obj)
 end
 
 -- save a table to a JSON file
-function encodeAndSavePretty(filename, obj)
-	if filename == nil then
-		error("filename cannot be nil.")
-	end
-	if obj == nil then
-		error("obj cannot be nil.")
-	end
+local function ObjectJSON.encodeAndSavePretty(filename, obj)
+	assert(filename, "filename cannot be nil.")
+	assert(obj, "obj cannot be nil.")
 	if not fs.exists(filename) then
 		print("Creating file [" .. filename .. "]")
 	end
@@ -103,3 +94,6 @@ function encodeAndSavePretty(filename, obj)
 	h.write(json.encodePretty(obj))
 	h.close()
 end
+
+init()
+return ObjectJSON
