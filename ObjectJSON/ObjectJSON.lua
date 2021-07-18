@@ -1,4 +1,4 @@
--- [V2.1-BETA]
+-- [V2.11-BETA]
 --- LIBS LOADING ---
 local libpath = "lib/ObjectJSON/"
 local ObjectJSON = {}
@@ -10,7 +10,7 @@ local function init()
 	if not fs.exists(libpath .. "json.lua") then
 		print("Warning : File [json] not found.")
 		print("Trying to download [json] lib.")
-		local obj = http.get("https://raw.githubusercontent.com/DaikiKaminari/TPS/master/lib/ObjectJSON/json")
+		local obj = http.get("https://raw.githubusercontent.com/DaikiKaminari/CC-Libs/master/objectJSON/json")
 		assert(obj, "Download failed.")
 		local str = obj.readAll()
 		assert(str and str ~= "", "Download failed.")
@@ -20,7 +20,7 @@ local function init()
 		print("Download successful.")
 	end
 	json = require(libpath .. "json")
-	print("API [ObjectJSON] initiated.")
+	print("API [ObjectJSON] loaded.")
 end
 ObjectJSON.init = init
 

@@ -22,7 +22,7 @@ local function init()
         error("[lib/ObjectJSON/ObjectJSON.lua] file not found.")
     end
     objectJSON = require("lib/ObjectJSON/ObjectJSON")
-    print("API [datetime] initiated.")
+    print("API [datetime] loaded.")
 end
 Datetime.init = init
 
