@@ -10,7 +10,7 @@ local function init()
 	if not fs.exists(libpath .. "json.lua") then
 		print("Warning : File [json] not found.")
 		print("Trying to download [json] lib.")
-		local obj = http.get("https://raw.githubusercontent.com/DaikiKaminari/CC-Libs/master/objectJSON/json")
+		local obj = http.get("https://raw.githubusercontent.com/DaikiKaminari/CC-Libs/master/ObjectJSON/json")
 		assert(obj, "Download failed.")
 		local str = obj.readAll()
 		assert(str and str ~= "", "Download failed.")
