@@ -15,9 +15,6 @@ local daylightHours = {
 
 --- INIT ---
 local function init()
-    if not fs.exists("lib/ObjectJSON/json.lua") then
-        error("[lib/ObjectJSON/json.lua] file not found.")
-    end
     if not fs.exists("lib/ObjectJSON/ObjectJSON.lua") then
         error("[lib/ObjectJSON/ObjectJSON.lua] file not found.")
     end

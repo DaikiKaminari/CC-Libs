@@ -1,124 +1,125 @@
--- -*- coding: utf8 -*-
--- Copyright (c) 2014 Odd Straaboe <oddstr13 at openshell dot no>
--- License: MIT - http://opensource.org/licenses/MIT
--- Filename: require.lua
+--- This provides a pure Lua implementation of the builtin @{require} function
+-- and @{package} library.
+--
+-- Generally you do not need to use this module - it is injected into the
+-- every program's environment. However, it may be useful when building a
+-- custom shell or when running programs yourself.
+--
+-- @module cc.require
+-- @usage Construct the package and require function, and insert them into a
+-- custom environment.
+--
+--     local r = require "cc.require"
+--     local env = setmetatable({}, { __index = _ENV })
+--     env.require, env.package = r.make(env, "/")
+--
+--     -- Now we have our own require function, separate to the original.
+--     local r2 = env.require "cc.require"
+--     print(r, r2)
 
-_G.package = {}
+local expect = require and require("cc.expect") or dofile("rom/modules/main/cc/expect.lua")
+local expect = expect.expect
 
-_G.package.cpath = ""
-_G.package.loaded = {}
-_G.package.loadlib = function() error("NotImplemented: package.loadlib") end
-_G.package.path = table.concat({
-	"?",
-	"?.lua",
-	"?/init.lua",
-	"/lib/?",
-	"/lib/?.lua",
-	"/lib/?/init.lua",
-	"/rom/apis/?",
-	"/rom/apis/?.lua",
-	"/rom/apis/?/init.lua",
-	"/rom/apis/turtle/?",
-	"/rom/apis/turtle/?.lua",
-	"/rom/apis/turtle/?/init.lua",
-	"/rom/apis/command/?",
-	"/rom/apis/command/?.lua",
-	"/rom/apis/command/?/init.lua",
-}, ";")
-_G.package.preload = {}
-_G.package.seeall = function(module) error("NotImplemented: package.seeall") end
-_G.module = function(m) error("NotImplemented: module") end
-
-local _package_path_loader = function(name)
-	
-	local fname = name:gsub("%.", "/")
-	
-	for pattern in package.path:gmatch("[^;]+") do
-		
-		local fpath = pattern:gsub("%?", fname)
-		
-		if fs.exists(fpath) and not fs.isDir(fpath) then
-			
-			local apienv = {}
-			setmetatable(apienv, {__index = _G})
-			
-			local apifunc, err = loadfile(fpath)
-			local ok
-			
-			if apifunc then
-				setfenv(apifunc, apienv)
-				ok, err = pcall(apifunc)
-			end
-			
-			if not apifunc or not ok then
-				error("error loading module '" .. name .. "' from file '" .. fpath .. "'\n\t" .. err)
-			end
-			
-			local api = {}
-			if type(err) == "table" then
-			  api = err
-			end
-			for k,v in pairs( apienv ) do
-				api[k] = v
-			end
-			
-			return api
-		end
-	end
+local function preload(package)
+    return function(name)
+        if package.preload[name] then
+            return package.preload[name]
+        else
+            return nil, "no field package.preload['" .. name .. "']"
+        end
+    end
 end
 
-_G.package.loaders = {
-	function(name)
-		if package.preload[name] then
-			return package.preload[name]
-		else
-			return "\tno field package.preload['" .. name .. "']"
-		end
-	end,
-	
-	function(name)
-		local _errors = {}
-		
-		local fname = name:gsub("%.", "/")
-		
-		for pattern in package.path:gmatch("[^;]+") do
-			
-			local fpath = pattern:gsub("%?", fname)
-			if fs.exists(fpath) and not fs.isDir(fpath) then
-				return _package_path_loader
-			else
-				table.insert(_errors, "\tno file '" .. fpath .. "'")
-			end
-		end
-		
-		return table.concat(_errors, "\n")
-	end
-}
-
-_G.require = function(name)
-	if package.loaded[name] then
-		--return package.loaded[name]
-	end
-	
-	local _errors = {}
-	
-	for _, searcher in pairs(package.loaders) do
-		local loader = searcher(name)
-		if type(loader) == "function" then
-			local res = loader(name)
-			if res ~= nil then
-				package.loaded[name] = res
-			end
-			
-			if package.loaded[name] == nil then
-				package.loaded[name] = true
-			end
-			
-			return package.loaded[name]
-		elseif type(loader) == "string" then
-			table.insert(_errors, loader)
-		end
-	end
-	
-	error("module '" .. name .. "' not found:\n" .. table.concat(_errors, "\n"))
+local function from_file(package, env, dir)
+    return function(name)
+        local fname = string.gsub(name, "%.", "/")
+        local sError = ""
+        for pattern in string.gmatch(package.path, "[^;]+") do
+            local sPath = string.gsub(pattern, "%?", fname)
+            if sPath:sub(1, 1) ~= "/" then
+                sPath = fs.combine(dir, sPath)
+            end
+            if fs.exists(sPath) and not fs.isDir(sPath) then
+                local fnFile, sError = loadfile(sPath, nil, env)
+                if fnFile then
+                    return fnFile, sPath
+                else
+                    return nil, sError
+                end
+            else
+                if #sError > 0 then
+                    sError = sError .. "\n  "
+                end
+                sError = sError .. "no file '" .. sPath .. "'"
+            end
+        end
+        return nil, sError
+    end
 end
+
+local function make_require(package)
+    local sentinel = {}
+    return function(name)
+        expect(1, name, "string")
+
+        if package.loaded[name] == sentinel then
+            error("loop or previous error loading module '" .. name .. "'", 0)
+        end
+
+        if package.loaded[name] then
+            return package.loaded[name]
+        end
+
+        local sError = "module '" .. name .. "' not found:"
+        for _, searcher in ipairs(package.loaders) do
+            local loader = table.pack(searcher(name))
+            if loader[1] then
+                package.loaded[name] = sentinel
+                local result = loader[1](name, table.unpack(loader, 2, loader.n))
+                if result == nil then result = true end
+
+                package.loaded[name] = result
+                return result
+            else
+                sError = sError .. "\n  " .. loader[2]
+            end
+        end
+        error(sError, 2)
+    end
+end
+
+--- Build an implementation of Lua's @{package} library, and a @{require}
+-- function to load modules within it.
+--
+-- @tparam table env The environment to load packages into.
+-- @tparam string dir The directory that relative packages are loaded from.
+-- @treturn function The new @{require} function.
+-- @treturn table The new @{package} library.
+local function make_package(env, dir)
+    expect(1, env, "table")
+    expect(2, dir, "string")
+
+    local package = {}
+    package.loaded = {
+        _G = _G,
+        bit32 = bit32,
+        coroutine = coroutine,
+        math = math,
+        package = package,
+        string = string,
+        table = table,
+    }
+    package.path = "?;?.lua;?/init.lua;/rom/modules/main/?;/rom/modules/main/?.lua;/rom/modules/main/?/init.lua"
+    if turtle then
+        package.path = package.path .. ";/rom/modules/turtle/?;/rom/modules/turtle/?.lua;/rom/modules/turtle/?/init.lua"
+    elseif commands then
+        package.path = package.path .. ";/rom/modules/command/?;/rom/modules/command/?.lua;/rom/modules/command/?/init.lua"
+    end
+    package.config = "/\n;\n?\n!\n-"
+    package.preload = {}
+    package.loaders = { preload(package), from_file(package, env, dir) }
+
+    return make_require(package), package
+end
+
+return { make = make_package }

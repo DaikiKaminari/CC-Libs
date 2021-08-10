@@ -1,26 +1,22 @@
--- [V2.11-BETA]
+-- [V2.2-BETA]
 --- LIBS LOADING ---
-local libpath = "lib/ObjectJSON/"
+local libpaths
+local default_libpath = {"/rom/apis/", "/lib", "/lib/ObjectJSON"}
 local ObjectJSON = {}
-local json -- load lib
+local json -- required lib
 
 --- INIT ---
 local function init()
-	print("\n--- INIT ObjectJSON ---")
-	if not fs.exists(libpath .. "json.lua") then
-		print("Warning : File [json] not found.")
-		print("Trying to download [json] lib.")
-		local obj = http.get("https://raw.githubusercontent.com/DaikiKaminari/CC-Libs/master/ObjectJSON/json")
-		assert(obj, "Download failed.")
-		local str = obj.readAll()
-		assert(str and str ~= "", "Download failed.")
-		local h = fs.open(libpath .. "json.lua", "w")
-		h.write(str)
-		h.close()
-		print("Download successful.")
+	-- if no libpaths specified then take the default one
+	if not libpaths then libpaths = default_libpath end
+	-- load json API
+	for lp in libpaths do
+		if fs.exists(lp .. "json.lua") or fs.exists(lp .. "json") then
+			json = require(lp .. "json")
+		end
+		error("No library [json.lua] found : " .. textutils.serialise(libpaths))
 	end
 	json = require(libpath .. "json")
-	print("API [ObjectJSON] loaded.")
 end
 ObjectJSON.init = init
 
