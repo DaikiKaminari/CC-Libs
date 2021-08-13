@@ -1,6 +1,8 @@
--- [V1.0]
+-- [V1.1]
+local inventory = {}
+
 -- return true if two items are identical
-function isItemIdentical(item1, item2, ignoreQty)
+local function isItemIdentical(item1, item2, ignoreQty)
     if not item1 then
         error("First item cannot be nil.")
     end
@@ -9,8 +11,9 @@ function isItemIdentical(item1, item2, ignoreQty)
     end
     return compareItems(item1, item2, ignoreQty) and compareItems(item2, item1, ignoreQty)
 end
+inventory.isItemIdentical = isItemIdentical
 
-function compareItems(item1, item2, ignoreQty)
+local function compareItems(item1, item2, ignoreQty)
     for k,v in pairs(item1) do
         if type(v) ~= type(item2[k]) then
             return false
@@ -27,8 +30,9 @@ function compareItems(item1, item2, ignoreQty)
     end
     return true
 end
+inventory.compareItems = compareItems
 
-function isItemInList(item1, itemList, ignoreQty)
+local function isItemInList(item1, itemList, ignoreQty)
     for k,item2 in pairs(itemList) do
         if isItemIdentical(item1, item2, ignoreQty) then
             return k
@@ -36,8 +40,9 @@ function isItemInList(item1, itemList, ignoreQty)
     end
     return false
 end
+inventory.isItemInList = isItemInList
 
-function isItemListIdentical(items1, items2, ignoreQty)
+local function isItemListIdentical(items1, items2, ignoreQty)
     for _,item1 in pairs(items1) do
         if not isItemInList(item1, items2, ignoreQty) then
             return false
@@ -50,3 +55,6 @@ function isItemListIdentical(items1, items2, ignoreQty)
     end
     return true
 end
+inventory.isItemListIdentical = isItemListIdentical
+
+return inventory

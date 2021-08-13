@@ -1,7 +1,5 @@
--- [V2.2-BETA]
+-- [V2.21-BETA]
 --- LIBS LOADING ---
-local libpaths
-local default_libpath = {"/rom/apis/", "/lib", "/lib/ObjectJSON"}
 local ObjectJSON = {}
 local json -- required lib
 
@@ -10,13 +8,7 @@ local function init()
 	-- if no libpaths specified then take the default one
 	if not libpaths then libpaths = default_libpath end
 	-- load json API
-	for lp in libpaths do
-		if fs.exists(lp .. "json.lua") or fs.exists(lp .. "json") then
-			json = require(lp .. "json")
-		end
-		error("No library [json.lua] found : " .. textutils.serialise(libpaths))
-	end
-	json = require(libpath .. "json")
+	json = require("json")
 end
 ObjectJSON.init = init
 
@@ -97,5 +89,4 @@ local function encodeAndSavePretty(obj, filename)
 end
 ObjectJSON.encodeAndSavePretty = encodeAndSavePretty
 
-init()
 return ObjectJSON
