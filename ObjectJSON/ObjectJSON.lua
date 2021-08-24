@@ -1,12 +1,10 @@
--- [V2.21-BETA]
+-- [V2.21]
 --- LIBS LOADING ---
 local ObjectJSON = {}
 local json -- required lib
 
 --- INIT ---
 local function init()
-	-- if no libpaths specified then take the default one
-	if not libpaths then libpaths = default_libpath end
 	-- load json API
 	json = require("json")
 end

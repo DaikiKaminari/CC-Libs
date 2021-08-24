@@ -1,4 +1,4 @@
--- [V1.2-BETA]
+-- [V1.3]
 --- LIBS LOADING ---
 local Datetime = {}
 local objectJSON
@@ -15,10 +15,11 @@ local daylightHours = {
 
 --- INIT ---
 local function init()
-    if not fs.exists("lib/ObjectJSON/ObjectJSON.lua") then
-        error("[lib/ObjectJSON/ObjectJSON.lua] file not found.")
+    if not fs.exists("ObjectJSON.lua") then
+        error("[ObjectJSON.lua] file not found.")
     end
-    objectJSON = require("lib/ObjectJSON/ObjectJSON")
+    objectJSON = require("ObjectJSON")
+    objectJSON.init()
     print("API [datetime] loaded.")
 end
 Datetime.init = init
